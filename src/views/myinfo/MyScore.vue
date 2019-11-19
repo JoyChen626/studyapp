@@ -19,7 +19,7 @@
                     <van-cell-group v-for="(item,index) in list" :key="index">
                         <van-cell
                                 :key="item"
-                                :title="item.name"
+                                :title="item.reason"
                                 :value="'+'+item.score"
                         />
                     </van-cell-group>
@@ -30,6 +30,7 @@
 </template>
 
 <script>
+    import {apiscore} from '../../api/api'
     export default {
         name: "MyScore",
         data () {
@@ -73,9 +74,12 @@
                 return result;
             },
             initPage () {
-                this.$axios.get('/study/my/getScore').then( res => {
-                    var data = res.data;
-                    this.myscore = data.myscore;
+                apiscore({userid:1}).then( res => {
+                    var data = res;
+                    for (let i = 0; i < data.list.length; i++) {
+                        const argument = data.list[i];
+                        this.myscore+=argument.score;
+                    }
                     this.scoreList = this.groupList(data.list);
                     this.onLoad();
                 })
@@ -85,7 +89,7 @@
 </script>
 
 <style scoped lang="scss">
-    @import "../../assets/style/mixin.scss";
+    @import "../../../public/style/mixin.scss";
     .MyScore{
         background: #eeeeee;
         .top-box{

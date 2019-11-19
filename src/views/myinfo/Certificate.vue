@@ -33,7 +33,7 @@
 </script>
 
 <style scoped lang="scss">
-    @import "../../assets/style/mixin";
+    @import "../../../public/style/mixin.scss";
     .img-box{
         padding: px2rem(30px) px2rem(20px) px2rem(10px) px2rem(20px);
         @include wh(100%,px2rem(1000px));

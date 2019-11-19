@@ -18,26 +18,16 @@
         name: "AboutOurs",
         data () {
             return {
-                logoImg: '',
-                title: '',
-                detail: ''
+                logoImg: 'https://img.yzcdn.cn/vant/cat.jpeg',
+                title: '沟通沟通过',
+                detail: '哈哈哈哈哈哈哈哈哈哈或或或或或或或或或或或或或或或或或或或或或或或或或或或或或或哈哈哈哈哈哈哈哈哈哈或或或或或或或或或或或或或或或或或或或或或或或或或或或或或或哈哈哈哈哈哈哈哈哈哈或或或或或或或或或或或或或或或或或或或或或或或或或或或或或或哈哈哈哈哈哈哈哈哈哈或或或或或或或或或或或或或或或或或或或或或或或或或或或或或或哈哈哈哈哈哈哈哈哈哈或或或或或或或或或或或或或或或或或或或或或或或或或或或或或或哈哈哈哈哈哈哈哈哈哈或或或或或或或或或或或或或或或或或或或或或或或或或或或或或或'
             }
-        },
-        mounted() {
-            var self = this;
-            this.$axios.get('/study/my/getOurs').then( res => {
-                if(res.data.code == 0) {
-                    self.logoImg = res.data.logoImg;
-                    self.title = res.data.title;
-                    self.detail = res.data.detail;
-                }
-            })
         }
     }
 </script>
 
 <style scoped lang="scss">
-    @import "../../assets/style/mixin";
+    @import "../../../public/style/mixin.scss";
     .AboutOurs{
         .box{
             padding-top: px2rem(200px);

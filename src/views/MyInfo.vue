@@ -55,6 +55,7 @@
 
 <script>
     import {mapState} from 'vuex';
+    import {apigetMyInfo} from '../api/api';
     export default {
         name: "MyInfo",
         //components: {bottomNav},
@@ -69,11 +70,11 @@
         },
         mounted () {
             this.username = this.name;
-            this.$axios.get('/study/getMyData').then( res => {
+            apigetMyInfo({username:this.username}).then( res => {
                 var info = res.data;
-                if(info.code == 0) {
+                if(res.code == 0) {
                     this.userphoto = info.userphoto;
-                    this.myphone = info.myphone;
+                    this.myphone = info.userphone;
                     this.entrance = info.entrance;
                     this.score = info.score;
                 }
@@ -86,7 +87,7 @@
 </script>
 
 <style scoped lang="scss">
-    @import "../assets/style/mixin.scss";
+    @import "../../public/style/mixin.scss";
     .MyInfo{
         background: #eeeeee;
         height: 100%;

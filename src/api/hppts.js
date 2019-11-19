@@ -4,26 +4,21 @@
 import axios from 'axios';
 import QS from 'qs';
 import router from '../router'
-import store from '../store.js'
+import store from '../store/index.js'
 import VueCookies from 'vue-cookies'
 import Vue from 'vue'
 import {Notify} from 'vant'
 
 Vue.use(Notify);
-// 环境的切换
-if (process.env.NODE_ENV == 'development') {
-    axios.defaults.baseURL = '';
-} else if (process.env.NODE_ENV == 'debug') {
-    axios.defaults.baseURL = '';
-} else if (process.env.NODE_ENV == 'production') {
-    axios.defaults.baseURL = '';
-}
 
 // 请求超时时间
 axios.defaults.timeout = 10000;
 
 // post请求头
+window.axios = require('axios');
 axios.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded;charset=UTF-8';
+window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest'
+//Vue.prototype.$http = window.axios
 
 // 请求拦截器
 axios.interceptors.request.use(
@@ -103,6 +98,7 @@ export function get(url, params){
         })
             .then(res => {
                 resolve(res.data);
+                console.log(res.data);
                 store.commit('CHANGE_LOADING', false);
             })
             .catch(err => {
@@ -122,10 +118,11 @@ export function post(url, params) {
         axios.post(url, QS.stringify(params))
             .then(res => {
                 resolve(res.data);
+                console.log(res.data);
                 store.commit('CHANGE_LOADING', false);
             })
             .catch(err => {
-                reject(err.data)
+                reject(err.data);
                 store.commit('CHANGE_LOADING', false);
             })
     });

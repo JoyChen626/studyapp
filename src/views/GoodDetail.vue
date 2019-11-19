@@ -9,7 +9,7 @@
 </script>
 
 <style scoped lang="scss">
-    @import "../assets/style/mixin.scss";
+    @import "../../public/style/mixin.scss";
     .GoodDetail{
 
     }

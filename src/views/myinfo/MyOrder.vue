@@ -7,6 +7,7 @@
 
 <script>
     import {mapMutations} from 'vuex'
+    import {apigetOrderInfo} from '../../api/api'
     export default {
         name: "MyOrder",
         data () {
@@ -20,9 +21,9 @@
         methods: {
             ...mapMutations({'save_order_list': 'CHANGE_MYORDER'}),
             initOrder () {
-                this.$axios.get('/study/my/getOrder').then(res => {
-                    if(res.data.code == 0){
-                        this.save_order_list(res.data.list);
+                apigetOrderInfo({userid: 1,status:0}).then(res => {
+                    if(res.code == 0){
+                        this.save_order_list(res.list);
                     }
                 })
             }
@@ -31,7 +32,7 @@
 </script>
 
 <style scoped lang="scss">
-    @import "../../assets/style/mixin";
+    @import "../../../public/style/mixin.scss";
     .MyOrder{
         background: #eeeeee;
         min-height: 100%;

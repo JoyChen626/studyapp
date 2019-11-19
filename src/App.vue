@@ -1,32 +1,47 @@
 <template>
   <div id="app">
-    <div id="nav">
-      <router-link to="/">Home</router-link> |
-      <router-link to="/about">About</router-link>
-    </div>
     <router-view/>
+    <van-overlay :show="loading">
+      <van-loading size="28px" type="spinner" vertical>加载中...</van-loading>
+    </van-overlay>
   </div>
 </template>
 
-<style lang="scss">
-#app {
-  font-family: 'Avenir', Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-}
+<script>
+  export default {
+    name: 'app',
+    data(){
+      return{
+        loading: false
+      }
+    },
+    methods:{
 
-#nav {
-  padding: 30px;
-
-  a {
-    font-weight: bold;
-    color: #2c3e50;
-
-    &.router-link-exact-active {
-      color: #42b983;
+    },
+    computed: {
+      loadingStatus () {
+        return this.$store.state.loading;
+      }
+    },
+    watch: {
+      loadingStatus (val) {
+        this.loading = val;
+      }
     }
   }
-}
+</script>
+<style lang="scss">
+  @import "./../public/style/common.scss";
+  @import "../public/style/mixin.scss";
+  #app{
+    @include wh(100%,100%);
+    background: #ffffff;
+    /deep/ .van-loading{
+      text-align: center;
+      .van-loading__spinner{
+        margin-top: px2rem(400px);
+      }
+    }
+
+  }
 </style>

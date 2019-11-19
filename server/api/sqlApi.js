@@ -3,6 +3,7 @@ var express = require('express');
 var router = express.Router();
 var mysql = require('mysql');
 var $sql = require('../mysql/sqlMap');
+var common = require('../../public/javascript/commonFn');
 
 var conn = mysql.createConnection(models.mysql);
 
@@ -13,7 +14,7 @@ var jsonWrite = function(res, ret) {
         res.send('err:'+ret);
     } else {
         console.log(ret);
-        res.send({code:0,mag:'请求成功'});
+        res.send({code:0,msg:'请求成功'});
     }
 }
 
@@ -21,22 +22,50 @@ var dateStr = function(str) {
     return new Date(str.slice(0,7));
 }
 
+var verificationCode = '';
+
 // 增加用户接口
 router.post('/addUser', (req, res) => {
     var sql = $sql.user.add;
     var params = req.body;
-    conn.query(sql, [params.username, params.password, params.userphoto,
-        params.userphone, params.sex], function(err, result) {
-        if (err) {
-            console.log(err);
+    console.log(params);
+    if(params.password !== params.password2) {
+        res.send({code:-1,msg:'两次输入的密码不一致'});
+        return false;
+    } else if (params.sms !== verificationCode){
+        res.send({code:-1,msg:'验证码有误'});
+        return false;
+    }
+    conn.query("select * from user where username ='" + params.username+"'", params.username,function (err2,result2) {
+        if (err2) {
+            console.log(err2);
         }
-        if (result) {
-            jsonWrite(res, result);
+        if (result2[0] !== undefined) {
+            res.send({code:-1,msg: '此用户名已存在'})
+        } else {
+            conn.query("select * from user where userphone ='" + params.userphone+"'", params.userphone,function (err3,result3) {
+                if (err3) {
+                    console.log(err3);
+                }
+                if (result3[0] !== undefined) {
+                    res.send({code:-1,msg: '此手机号已被占用'})
+                } else {
+                    conn.query(sql, [params.username, params.password, params.userphoto,
+                        params.userphone, params.sex], function(err, result) {
+                        if (err) {
+                            console.log(err);
+                        }
+                        if (result) {
+                            res.send({code:0,msg: '登录成功',token: common.str_add(common.randomString(32,'ABCDEFGHJKMNPQRSTWXYZabcdefhijkmnprstwxyz2345678'),8,'-')})
+                        }
+                    })
+                }
+            })
         }
     })
 });
 
-//查找用户接口
+//登录接口
 router.post('/userLogin', (req, res) => {
     var sql_name = $sql.user.select_name;
     var params = req.body;
@@ -52,7 +81,7 @@ router.post('/userLogin', (req, res) => {
         } else {
             var resultObj = result[0];
             if(resultObj.password === params.password) {
-                jsonWrite(res, result);
+                res.send({code:0,msg: '登录成功',token: common.str_add(common.randomString(32,'ABCDEFGHJKMNPQRSTWXYZabcdefhijkmnprstwxyz2345678'),8,'-')})
             } else {
                 res.send({code:1,msg:'密码错误'})   //username
             }
@@ -63,18 +92,18 @@ router.post('/userLogin', (req, res) => {
 //获取用户信息
 router.get('/getUser', (req, res) => {
     var sql_name = $sql.user.select_name;
-    var params = req.body;
-    if (params.name) {
-        sql_name += "where username ='"+ params.name +"'";
+    var params = req.query;
+    if (params.username) {
+        sql_name += " where username ='"+ params.username +"'";
     }
-    conn.query(sql_name, params.name, function(err, result) {
+    conn.query(sql_name, params.username, function(err, result) {
         if (err) {
             console.log(err);
         }
         if (result[0] === undefined) {
             res.send({code: -1})   //查询不出username，data 返回-1
         } else {
-            jsonWrite(res, result);
+            res.send({code: 0,data: result[0] })
         }
     })
 });
@@ -96,7 +125,7 @@ router.post('/updateUser', (req, res) => {
         if (result.affectedRows === undefined) {
             res.send({code:-1,msg:'更新失败，请联系管理员'})   //查询不出username，data 返回-1
         } else {
-            res.send({code:0,mag:'ok'});
+            res.send({code:0,msg:'ok'});
         }
     })
 });
@@ -114,12 +143,188 @@ router.post('/modifyPassword', (req, res) => {
             console.log(err);
         }
         if (result.affectedRows === undefined) {
-            res.send({code:-1,mag:'修改密码失败，请联系管理员'})   //查询不出username，data 返回-1
+            res.send({code:-1,msg:'修改密码失败，请联系管理员'})   //查询不出username，data 返回-1
         } else {
             res.send({code:0,msg:'ok'});
         }
     })
 });
 
+//发送验证码
+router.get('/verificationCode', (req, res) => {
+    var params = req.query;
+    if (params.userphone == '') {
+        res.send({code:-1,msg:'手机号不能为空'});
+        return false
+    } else {
+        conn.query("select * from user where userphone ='" + params.userphone+"'", params.userphone,function (err2,result2) {
+            if (err2) {
+                console.log(err2);
+            }
+            if (result2[0] !== undefined) {
+                res.send({code:-1,msg: '此手机号已被占用'})
+            } else {
+                verificationCode = common.randomString(6,'1234567890');
+                res.send({code:0,verificationCode:verificationCode});
+            }
+        })
+    }
+});
+
+//首页
+router.get('/homeData', (req, res) => {
+    var data = {};
+    var sql_banner = $sql.home.banner;
+    var sql_b_class = $sql.home.boutiqueClass;
+    var sql_nba_class = $sql.home.NBAClass;
+    var sql_harvests = $sql.home.harvests;
+    //var params = req.query;
+    //获取banner
+    conn.query(sql_banner,'',function (err,result) {
+        if (err) {
+            console.log(err);
+        }
+        if (result.length == 0) {
+            data.banner = [];
+        } else {
+            data.banner = result;
+            //获取b_class
+            conn.query(sql_b_class,'',function (err1,result1) {
+                if (err1) {
+                    console.log(err1);
+                }
+                if (result.length == 0) {
+                    data.b_class = [];
+                } else {
+                    data.b_class = result1;
+                    //获取nba_class
+                    conn.query(sql_nba_class,'',function (err2,result2) {
+                        if (err2) {
+                            console.log(err2);
+                        }
+                        if (result2.length == 0) {
+                            data.nba_class = [];
+                        } else {
+                            data.nba_class = result2;
+                            //获取harvests
+                            conn.query(sql_harvests,'',function (err3,result3) {
+                                if (err3) {
+                                    console.log(err3);
+                                }
+                                if (result.length == 0) {
+                                    data.harvests = [];
+                                } else {
+                                    data.harvests = result3;
+                                    //获取characteristic
+                                    conn.query(sql_banner,'',function (err4,result4) {
+                                        if (err4) {
+                                            console.log(err4);
+                                        }
+                                        if (result.length == 0) {
+                                            data.characteristic = [];
+                                        } else {
+                                            data.characteristic = result4;
+                                            //获取adsense
+                                            conn.query(sql_banner,'',function (err5,result5) {
+                                                if (err5) {
+                                                    console.log(err5);
+                                                }
+                                                if (result.length == 0) {
+                                                    data.adsense = '';
+                                                } else {
+                                                    data.adsense = result5[0].imgUrl;
+                                                    res.send(data);
+                                                }
+                                            })
+                                        }
+                                    })
+                                }
+                            })
+                        }
+                    })
+                }
+            })
+        }
+    })
+});
+
+//获取订单信息
+router.get('/getOrder', (req, res) => {
+    var sql_order = $sql.my.order;
+    var params = req.query;
+    console.log(params)
+    if (params.userid != '') {
+        sql_order += " where userid = "+ params.userid + " and status = " + params.status;
+    }
+    conn.query(sql_order, [params.userid,params.status],function (err,result) {
+        if (err) {
+            console.log(err);
+        }
+        if (result.length== 0) {
+            res.send({code:0,list:[]})
+        } else {
+            res.send({code:0,list:result})
+        }
+    })
+});
+//删除订单
+router.get('/deleteOrder', (req, res) => {
+    var sql_delete = $sql.my.delete;
+    var params = req.query;
+    console.log(params)
+    if (params.userid != '') {
+        sql_delete += " where goodid = "+ params.goodid;
+    }
+    conn.query(sql_delete, params.goodid,function (err,result) {
+        if (err) {
+            console.log(err);
+        }
+        if (result) {
+            res.send({code:0,msg:'删除成功！'})
+        } else {
+            res.send({code:-1,msg: '删除失败！'})
+        }
+    })
+});
+//获取积分
+router.get('/score', (req, res) => {
+    var sql_score = $sql.my.score;
+    var params = req.query;
+    if (params.userid != '') {
+        sql_score += " where userid = "+ params.userid;
+    }
+    conn.query(sql_score, params.goodid,function (err,result) {
+        if (err) {
+            console.log(err);
+        }
+        if (result[0] == undefined) {
+            res.send({code:0,list:[]})
+        } else {
+            res.send({code:0,list:result})
+        }
+    })
+});
+//homework
+router.get('/getSubject', (req, res) => {
+    var params = req.query;
+    conn.query('select * from homework where type =' + params.type, params.type,function (err,result) {
+        if (err) {
+            console.log(err);
+        }
+        if (result[0] == undefined) {
+            res.send({code:0,list:[]})
+        } else {
+            for(var i in result){
+                result[i].num = Number(i)+1;
+                result[i].list = [];
+                result[i].list.push({id:'A',text:result[i].a_answer});
+                result[i].list.push({id:'B',text:result[i].b_answer});
+                result[i].list.push({id:'C',text:result[i].c_answer});
+                result[i].list.push({id:'D',text:result[i].d_answer});
+            }
+            res.send({code:0,list:result})
+        }
+    })
+});
 
 module.exports = router;

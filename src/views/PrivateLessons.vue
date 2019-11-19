@@ -90,7 +90,7 @@
 </script>
 
 <style scoped lang="scss">
-    @import "../assets/style/mixin.scss";
+    @import "../../public/style/mixin.scss";
     .PrivateLessons{
         padding-top: px2rem(20px);
         background: #eeeeee;

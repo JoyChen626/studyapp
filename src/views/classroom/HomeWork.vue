@@ -6,12 +6,12 @@
             <van-circle class="right" v-model="currentRate" :text="currentRate+ '%'" :rate="rate" :speed="100" size="40" layer-color="#eeeeee"/>
         </div>
         <div class="subject-box">
-            <p class="title">{{list.num + '.' + list.text}}</p>
+            <p class="title">{{list.num + '.' + list.problem}}</p>
             <ul class="anser-ul">
                 <li>
-                    <van-radio-group v-model="list.answer">
+                    <van-radio-group v-model="list.my_answer">
                         <van-cell-group v-for="item in list.list" :key="item.id">
-                            <van-cell :border="borderFlag" title-class="li-title" :title="item.id+'.'+item.text" clickable @click="list.answer = item.id">
+                            <van-cell :border="borderFlag" title-class="li-title" :title="item.id+'.'+item.text" clickable @click="list.my_answer = item.id">
                                 <van-radio slot="right-icon" :name="item.id" disabled v-if="showAnswer"/>
                                 <van-radio slot="right-icon" :name="item.id" v-else/>
                             </van-cell>
@@ -24,10 +24,10 @@
                 <div class="btn-submit" v-else><van-button type="info" v-if="list.num!=1" @click="nextSubject('prev',list.num)">上一题</van-button> <van-button v-if="!showAnswer" type="primary" @click="submitAnswer()">提交</van-button></div>
             </div>
             <div class="answer-box" v-if="showAnswer">
-                <p :class="list.answer == list.trueAnswer?'true':'error'">我的答案：{{list.answer}}</p>
+                <p :class="list.my_answer == list.true_answer?'true':'error'">我的答案：{{list.my_answer}}</p>
                 <div class="true-answer-box">
-                    <p>正确答案：{{list.trueAnswer}}</p>
-                    <p>{{list.trueText}}</p>
+                    <p>正确答案：{{list.true_answer}}</p>
+                    <p>{{list.reason}}</p>
                 </div>
             </div>
         </div>
@@ -35,6 +35,7 @@
 </template>
 
 <script>
+    import {apigetSubject} from '../../api/api'
     export default {
         name: "HomeWork",
         data () {
@@ -49,10 +50,10 @@
             }
         },
         mounted() {
-            this.$axios.get('/study/classroom/getSubject').then( res => {
-                var data = res.data;
-                if(data.code == 0){
-                    this.subject = data.subject;
+            apigetSubject({type:1}).then( res => {
+                if(res.code == 0){
+                    var data = res.list;
+                    this.subject = data;
                     this.list = this.subject[0];
                     this.getRate();
                 }
@@ -63,11 +64,13 @@
                 let number =0;
                 for (let i = 0; i < this.subject.length; i++) {
                     const item = this.subject[i];
-                    if (item.answer !=='') {
+                    if (item.my_answer != null && item.my_answer != '') {
                         number += 1;
+                    } else{
+                        number = 0;
                     }
                 }
-                this.rate = (number/this.subject.length)*100;
+                this.currentRate = (number/this.subject.length)*100;
             },
             nextSubject (type,num) {
                 console.log(type)
@@ -101,8 +104,8 @@
                 var numBer =0;
                 for (let i = 0; i < this.subject.length; i++) {
                     const item = this.subject[i];
-                    if (item.answer !=='') {
-                        if(this.number != item.num){
+                    if (item.my_answer !='' && item.my_answer !=null) {
+                        if(this.numBer != item.num){
                             numBer = item.num;
                         }
                     }
@@ -119,7 +122,7 @@
 </script>
 
 <style scoped lang="scss">
-    @import "../../assets/style/mixin.scss";
+    @import "../../../public/style/mixin.scss";
     .HomeWork{
         background: #eeeeee;
         min-height: 100%;

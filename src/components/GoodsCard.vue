@@ -8,14 +8,14 @@
                     @load="onLoad"
             >
                 <van-checkbox-group v-model="result" ref="checkboxGroup">
-                    <van-checkbox v-for="(item,index) in list" :key="index+1" :name="item.key">
+                    <van-checkbox v-for="(item,index) in list" :key="index+1" :name="item.goodid">
                         <van-card
-                                :num="item.num"
-                                :price="item.price"
-                                :origin-price="item.origin_price"
-                                :desc="item.desc"
-                                :title="item.title"
-                                :thumb="item.thumb"
+                                :num="item.count"
+                                :price="item.money"
+                                :origin-price="item.oldmoney"
+                                :desc="item.gooddetail"
+                                :title="item.goodname"
+                                :thumb="item.goodimg"
                         >
                             <div slot="tags">
                                 <van-tag plain type="danger">标签</van-tag>
@@ -23,7 +23,7 @@
                             </div>
                             <div slot="footer">
                                 <van-button size="mini">退款</van-button>
-                                <van-button size="mini">删除</van-button>
+                                <van-button size="mini" @click="deleteorder(item.goodid,index)">删除</van-button>
                             </div>
                         </van-card>
                     </van-checkbox>
@@ -40,6 +40,7 @@
 
 <script>
     import {mapState} from 'vuex'
+    import {apideleteOrder} from '../api/api'
     export default {
         name: "GoodsCard",
         data() {
@@ -93,12 +94,21 @@
                     this.$refs.checkboxGroup.toggleAll(true);
                 }
             },
+            deleteorder(id,index){
+                apideleteOrder({goodid:id}).then( res => {
+                    if(res.code == 0){
+                        this.list.splice(index,1);
+                        this.$notify({type:'primary',message:res.msg});
+                    } else {
+                        this.$notify({ type: 'danger', message: res.msg});
+                    }
+                })
+            },
             deleteAll() {
                 for (let i = 0; i < this.list.length; i++) {
                     if(this.result.indexOf(this.list[i].key)>=0){
                         this.list.splice(i,1);
                         i-=1;
-                        console.log(this.list);
                     }
                 }
             }
@@ -115,7 +125,7 @@
 </script>
 
 <style scoped lang="scss">
-    @import "../assets/style/mixin.scss";
+    @import "../../public/style/mixin.scss";
     .GoodsCard{
         background: #ffffff;
         .box{
@@ -132,6 +142,12 @@
             bottom: 0;
             left: 0;
             width: 100%;
+        }
+        /deep/ .van-checkbox{
+            margin: px2rem(10px) 0;
+        }
+        /deep/ .van-card__desc{
+            width: px2rem(390px);
         }
     }
 </style>

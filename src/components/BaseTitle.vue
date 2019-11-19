@@ -30,7 +30,7 @@
 </script>
 
 <style scoped lang="scss">
-    @import "../assets/style/mixin.scss";
+    @import "../../public/style/mixin.scss";
     .full-box{height: px2rem(80px)}
     .top-box{
         position: fixed;

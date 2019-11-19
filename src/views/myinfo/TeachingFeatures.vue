@@ -57,30 +57,29 @@
         data () {
             return {
                 borderNone: false,
-                bannerImg: '',
-                procedureList: [],
-                title:'',
-                detail: [],
-                picDetail:''
+                bannerImg: 'https://img.yzcdn.cn/vant/cat.jpeg',
+                procedureList: [
+                    {name:'高效',title:'高效的应用',list:['哈哈哈哈哈','呀呀呀呀呀呀呀']},
+                    {name:'高效',title:'高效的应用',list:['哈哈哈哈哈','呀呀呀呀呀呀呀']},
+                    {name:'高效',title:'高效的应用',list:['哈哈哈哈哈','呀呀呀呀呀呀呀']},
+                    {name:'高效',title:'高效的应用',list:['哈哈哈哈哈','呀呀呀呀呀呀呀']},
+                    {name:'高效',title:'高效的应用',list:['哈哈哈哈哈','呀呀呀呀呀呀呀']},
+                    {name:'高效',title:'高效的应用',list:['哈哈哈哈哈','呀呀呀呀呀呀呀']},
+                    ],
+                title:'hhhh',
+                detail: [
+                    '呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀',
+                    '呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀呀'
+                ],
+                picDetail:'https://img.yzcdn.cn/vant/cat.jpeg'
             }
         },
-        mounted() {
-            this.$axios.get('/study/my/teachFeatures').then( res => {
-                var data = res.data;
-                if(data.code == 0){
-                    this.bannerImg = data.bannerImg;
-                    this.procedureList = data.procedureList;
-                    this.title = data.title;
-                    this.detail = data.detail;
-                    this.picDetail = data.picDetail;
-                }
-            })
-        }
+        mounted() {}
     }
 </script>
 
 <style scoped lang="scss">
-    @import "../../assets/style/mixin.scss";
+    @import "../../../public/style/mixin.scss";
     .TeachingFeatures{
         min-height: 100%;
         .banner-box{
