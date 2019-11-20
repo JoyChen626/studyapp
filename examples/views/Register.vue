@@ -1,7 +1,7 @@
 <template>
     <div class="Register">
         <div class="logo-box">
-            <van-uploader v-model="fileList" :before-read="beforeRead" multiple :max-count="1"/>
+            <van-uploader v-model="fileList" :before-read="beforeRead" :after-read="onchange" multiple :max-count="1"/>
         </div>
         <div class="">
             <div class="input-box">
@@ -47,6 +47,7 @@
 </template>
 
 <script>
+    import {mapMutations} from 'vuex';
     import {apiGetCode,apiAddUser} from '../api/api'
     export default {
         name: "Register",
@@ -59,16 +60,33 @@
                 userphone:'',
                 sms:'',
                 sex:'',
-                count: 60
+                count: 60,
+                imgObj: {}
             }
         },
         methods:{
+            ...mapMutations({'save_userinfo':'SAVE_USERNAME','set_token': 'SET_TOKEN'}),
             beforeRead(file) {
                 if (file.type !== 'image/jpeg' && file.type !== 'image/png') {
                     console.log('请上传 jpg || png 格式图片');
                     return false;
                 }
                 return true;
+            },
+            // 文件上传
+            onchange (){
+                var self = this;
+                let formData = new FormData;
+                formData.append('file',this.fileList[0].file)
+                const instance= axios.create({
+                    withCredentials: true
+                })
+                instance.post('/api/study/upload', formData)
+                    .then(res => {
+                        console.log(res)
+                        self.imgObj.path = res.data.data.path;
+                        self.imgObj.id = res.data.data.id;
+                    })
             },
             register_click(){
                 var self = this;
@@ -77,18 +95,25 @@
                     return false;
                 } else {
                     var sendData = {};
-                    sendData.userphoto= this.fileList[0]?dataURLtoBlob(this.fileList[0].content):'';
+                    sendData.userphoto = self.imgObj.path;
+                    sendData.userphotoid = self.imgObj.id;
                     sendData.username=this.username;
                     sendData.password=this.password;
                     sendData.password2=this.password2;
-                    sendData.userphone=this.userphone;
+                    if(validatePhoneTwo(this.userphone)){
+                        sendData.userphone=this.userphone;
+                    }else {
+                        return false
+                    }
                     sendData.sms=this.sms;
                     sendData.sex=this.sex;
                     apiAddUser(sendData).then( (res) => {
                         if(res.code == 0) {
                             this.$notify({ type: 'primary', message: '注册成功，将为您自动登录', duration: 2000 });
+                            this.set_token(res.token);
+                            this.save_userinfo(this.username);
                             setTimeout( () =>{
-                                self.$router.push({path:'/home'});
+                                self.$router.push({path:'/myinfo'});
                             },2000)
                         } else {
                             this.$notify({ type: 'danger', message: res.msg, duration: 2000 });
@@ -121,13 +146,18 @@
             }
         }
     }
-    function dataURLtoBlob(url){
-        var arr = url.split(','), mime = arr[0].match(/:(.*?);/)[1],
-            bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
-        while (n--) {
-            u8arr[n] = bstr.charCodeAt(n);
+    function validatePhoneTwo(rule, value) {
+        const reg =/^[1][3-9][0-9]{9}$/;
+        if (value == '' || value == undefined || value == null) {
+            return true;
+        } else {
+            if ((!reg.test(value)) && value != '') {
+                console.log('请输入正确的电话号码');
+                return false;
+            } else {
+                return true;
+            }
         }
-        return new Blob([u8arr], {type: mime});
     }
 </script>
 

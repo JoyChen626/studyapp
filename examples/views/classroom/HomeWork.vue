@@ -35,7 +35,7 @@
 </template>
 
 <script>
-    import {apigetSubject} from '../../api/api'
+    import {apigetSubject,apipostAnswer} from '../../api/api'
     export default {
         name: "HomeWork",
         data () {
@@ -88,12 +88,17 @@
                 var answerList = [];
                 for (let i = 0; i < this.subject.length; i++) {
                     const item = this.subject[i];
-                    if(item.answer !=''){
-                        answerList.push(item.answer);
+                    if(item.my_answer !=''){
+                        answerList.push(item.my_answer);
                     }
                 }
                 if(answerList.length == this.subject.length){
-                    this.showAnswer = true;
+                    apipostAnswer({answerList:answerList,id: 1}).then( res => {
+                        if(res.code == 0){
+                            this.showAnswer = true;
+                        }
+                    })
+
                 } else {
                     this.$notify({type: "warning", message:'请对第'+this.subject.length+'小题作答！'});
                 }

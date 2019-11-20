@@ -1,8 +1,9 @@
 var sqlMap = {
     user: {
-        add: 'insert into user (username, password, userphoto, userphone,sex) values (?,?,?,?,?)',
+        add: 'insert into user (username, password, userphoto, userphone, sex, fileId) values (?,?,?,?,?,?)',
         select_name: 'select * from user',
-        update_user: 'update user set'
+        update_user: 'update user set',
+        upload:'INSERT INTO uploadfiles(fieldname, originalName, tmpName, encoding, mimetype, size, path, tmpPath, addTime) VALUES(?,?,?,?,?,?,?,?,?)'
     },
     home: {
         banner: 'select * from banner',
@@ -14,6 +15,10 @@ var sqlMap = {
         order: 'select * from orderList',
         delete: 'delete from orderList',
         score: 'select * from score'
+    },
+    class: {
+        get: 'select * from homework',
+        sbumit: 'update homework set'
     }
 }
 

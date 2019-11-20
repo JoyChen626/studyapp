@@ -58,7 +58,7 @@
                         this.set_token(res.token);
                         this.save_userinfo(this.username);
                         this.$notify({ type: 'primary', message: '登录成功', duration: 2000 });
-                        this.$router.push({path: '/home'});
+                        this.$router.push({path: '/myinfo'});
                     } else {
                         this.$notify({ type: 'danger', message: res.msg, duration: 2000 });
                     }

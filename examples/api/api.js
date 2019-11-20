@@ -9,6 +9,7 @@ export const apigetOrderInfo = params => get('/api/study/getOrder', params);
 export const apideleteOrder = params => get('/api/study/deleteOrder', params);
 export const apiscore = params => get('/api/study/score', params);
 export const apigetSubject = params => get('/api/study/getSubject', params);
+export const apipostAnswer = params => get('/api/study/postAnswer', params);
 export const apigetVideoUrl = params => get('classroom/getvideourl', params);
 export const apigetVideoInfo = params => get('classroom/getvideoinfo', params);
 export const apigetComment = params => get('classroom/getcomment', params);

@@ -73,7 +73,7 @@
             apigetMyInfo({username:this.username}).then( res => {
                 var info = res.data;
                 if(res.code == 0) {
-                    this.userphoto = info.userphoto;
+                    this.userphoto = require('../../../studyapp/server/'+info.userphoto);
                     this.myphone = info.userphone;
                     this.entrance = info.entrance;
                     this.score = info.score;

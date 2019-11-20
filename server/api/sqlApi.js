@@ -3,7 +3,13 @@ var express = require('express');
 var router = express.Router();
 var mysql = require('mysql');
 var $sql = require('../mysql/sqlMap');
+var fs = require('fs');
 var common = require('../../public/javascript/commonFn');
+var multer = require('multer');
+// 设置文件缓存的目录
+var upload = multer({ dest: '../../uploadFiles/tmp/'});
+var globalObj = require('../../config')
+
 
 var conn = mysql.createConnection(models.mysql);
 
@@ -28,7 +34,7 @@ var verificationCode = '';
 router.post('/addUser', (req, res) => {
     var sql = $sql.user.add;
     var params = req.body;
-    console.log(params);
+    console.log(req.body);
     if(params.password !== params.password2) {
         res.send({code:-1,msg:'两次输入的密码不一致'});
         return false;
@@ -51,7 +57,7 @@ router.post('/addUser', (req, res) => {
                     res.send({code:-1,msg: '此手机号已被占用'})
                 } else {
                     conn.query(sql, [params.username, params.password, params.userphoto,
-                        params.userphone, params.sex], function(err, result) {
+                        params.userphone, params.sex,params.userphotoid], function(err, result) {
                         if (err) {
                             console.log(err);
                         }
@@ -306,8 +312,9 @@ router.get('/score', (req, res) => {
 });
 //homework
 router.get('/getSubject', (req, res) => {
+    var $sql_subject = $sql.class.get;
     var params = req.query;
-    conn.query('select * from homework where type =' + params.type, params.type,function (err,result) {
+    conn.query($sql_subject+' where type =' + params.type, params.type,function (err,result) {
         if (err) {
             console.log(err);
         }
@@ -326,5 +333,87 @@ router.get('/getSubject', (req, res) => {
         }
     })
 });
+
+//提交答案
+router.post('/postAnswer', (req, res) => {
+    var $sql_sbumit = $sql.class.sbumit;
+    var params = req.body;
+
+    if (params.answerList.length>0) {
+        for(var i in params.answerList){
+            $sql_sbumit +=  " my_answer = '" + params.answerList[i] +
+                "' where id ='"+ params.id + "'";
+            conn.query($sql_sbumit, params.my_answer,function (err,result) {
+                if (err) {
+                    console.log(err);
+                }
+                if (result.id == undefined) {
+                    res.send({code:-1,msg:'提交失败'})
+                } else {
+                    res.send({code:0,msg:'ok'})
+                }
+            })
+        }
+    }
+});
+
+// 文件上传
+router.post('/upload', upload.array('file'),function(req, res, next) {
+    // 文件信息
+    if (req.files[0]){
+        console.log("----------接收文件----------\n");
+        console.log(req.files);
+    }
+    let reqData = req.files[0]
+    uploadFn(reqData, res, next);
+});
+
+function uploadFn (req, res) {
+    var des_file =  "uploadFiles/file/" + req.originalname;
+    fs.readFile(req.path, function (error, data) {
+        if (error) {
+            console.error(error);
+        }
+        fs.writeFile(des_file, data, function (err) {
+            if (err) {
+                console.log(err);// 接收失败
+            }else {
+                // 接收成功
+                // 删除缓存文件
+                fs.unlink(req.path, function(err){
+                    if (err){
+                        console.log('文件:'+req.path+'删除失败！');
+                        return console.error(err);
+                    }
+                })
+                // 将文件信息写入数据库
+                var time = new Date().toJSON();
+                // 前端传过来的参数
+                var addSqlParams = [req.fieldname,req.originalname,req.filename,req.encoding,req.mimetype,req.size,des_file, __dirname + '/' + req.path,time]
+                // 插入数据
+                conn.query($sql.user.upload, addSqlParams, function (err, result) {
+                    if (err) {
+                        return console.error(err);
+                    }else {
+                        var response = {
+                            status:200,
+                            message: '上传成功!',
+                            data:{
+                                id:result.insertId,
+                                //path:globalObj.rootDir+ '/' + des_file,
+                                path:des_file,
+                                fileName:req.filename,
+                                time:time,
+                                type:req.mimetype,
+                                size:req.size,
+                            }
+                        };
+                        res.json( response );
+                    }
+                })
+            }
+        })
+    })
+}
 
 module.exports = router;

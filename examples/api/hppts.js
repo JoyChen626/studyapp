@@ -16,9 +16,9 @@ axios.defaults.timeout = 10000;
 
 // post请求头
 window.axios = require('axios');
+
 axios.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded;charset=UTF-8';
 window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest'
-//Vue.prototype.$http = window.axios
 
 // 请求拦截器
 axios.interceptors.request.use(
